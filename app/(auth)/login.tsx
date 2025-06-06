@@ -1,16 +1,30 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { TextInput, Button, Text, Surface } from 'react-native-paper';
 import { Link, router } from 'expo-router';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { signIn } = useAuth();
 
-  const handleLogin = () => {
-    // TODO: Implement login logic
-    console.log('Login:', { email, password });
-    router.replace('/(app)/chats');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await signIn(email, password);
+      router.replace('/(app)/chats');
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -26,6 +40,7 @@ export default function LoginScreen() {
           style={styles.input}
           keyboardType="email-address"
           autoCapitalize="none"
+          disabled={loading}
         />
         
         <TextInput
@@ -35,12 +50,15 @@ export default function LoginScreen() {
           mode="outlined"
           style={styles.input}
           secureTextEntry
+          disabled={loading}
         />
         
         <Button
           mode="contained"
           onPress={handleLogin}
           style={styles.button}
+          loading={loading}
+          disabled={loading}
         >
           Login
         </Button>
@@ -48,7 +66,7 @@ export default function LoginScreen() {
         <View style={styles.registerContainer}>
           <Text>Don't have an account? </Text>
           <Link href="/register" asChild>
-            <Button mode="text" compact>Register</Button>
+            <Button mode="text" compact disabled={loading}>Register</Button>
           </Link>
         </View>
       </Surface>

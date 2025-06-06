@@ -1,9 +1,9 @@
 import { Stack } from 'expo-router';
-import { PaperProvider } from 'react-native-paper';
+import { AuthProvider } from '../contexts/AuthContext';
 
 export default function RootLayout() {
   return (
-    <PaperProvider>
+    <AuthProvider>
       <Stack>
         <Stack.Screen
           name="(auth)"
@@ -18,6 +18,6 @@ export default function RootLayout() {
           }}
         />
       </Stack>
-    </PaperProvider>
+    </AuthProvider>
   );
 }

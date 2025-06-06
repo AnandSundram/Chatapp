@@ -1,17 +1,36 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { TextInput, Button, Text, Surface } from 'react-native-paper';
 import { Link, router } from 'expo-router';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { signUp } = useAuth();
 
-  const handleRegister = () => {
-    // TODO: Implement registration logic
-    console.log('Register:', { email, password });
-    router.replace('/(app)/chats');
+  const handleRegister = async () => {
+    if (!email || !password || !confirmPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await signUp(email, password);
+      router.replace('/(app)/chats');
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -27,6 +46,7 @@ export default function RegisterScreen() {
           style={styles.input}
           keyboardType="email-address"
           autoCapitalize="none"
+          disabled={loading}
         />
         
         <TextInput
@@ -36,6 +56,7 @@ export default function RegisterScreen() {
           mode="outlined"
           style={styles.input}
           secureTextEntry
+          disabled={loading}
         />
 
         <TextInput
@@ -45,12 +66,15 @@ export default function RegisterScreen() {
           mode="outlined"
           style={styles.input}
           secureTextEntry
+          disabled={loading}
         />
         
         <Button
           mode="contained"
           onPress={handleRegister}
           style={styles.button}
+          loading={loading}
+          disabled={loading}
         >
           Register
         </Button>
@@ -58,7 +82,7 @@ export default function RegisterScreen() {
         <View style={styles.loginContainer}>
           <Text>Already have an account? </Text>
           <Link href="/login" asChild>
-            <Button mode="text" compact>Login</Button>
+            <Button mode="text" compact disabled={loading}>Login</Button>
           </Link>
         </View>
       </Surface>
