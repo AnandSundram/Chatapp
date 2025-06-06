@@ -1,12 +1,9 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { 
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  User
-} from 'firebase/auth';
-import { auth } from '../config/firebase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+interface User {
+  email: string;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -23,35 +20,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
+    // Check if user is logged in
+    const checkUser = async () => {
+      try {
+        const userJson = await AsyncStorage.getItem('user');
+        if (userJson) {
+          setUser(JSON.parse(userJson));
+        }
+      } catch (error) {
+        console.error('Error checking auth state:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    return unsubscribe;
+    checkUser();
   }, []);
 
   const signUp = async (email: string, password: string) => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      // In a real app, you would validate the email and password
+      const newUser = { email };
+      await AsyncStorage.setItem('user', JSON.stringify(newUser));
+      setUser(newUser);
     } catch (error) {
-      throw error;
+      throw new Error('Failed to sign up');
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      // In a real app, you would validate credentials
+      const user = { email };
+      await AsyncStorage.setItem('user', JSON.stringify(user));
+      setUser(user);
     } catch (error) {
-      throw error;
+      throw new Error('Failed to sign in');
     }
   };
 
   const logout = async () => {
     try {
-      await signOut(auth);
+      await AsyncStorage.removeItem('user');
+      setUser(null);
     } catch (error) {
-      throw error;
+      throw new Error('Failed to logout');
     }
   };
 

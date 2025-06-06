@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
-import { TextInput, Button, Text, Surface } from 'react-native-paper';
 import { Link, router } from 'expo-router';
+import React, { useState } from 'react';
+import { Alert, StyleSheet, View } from 'react-native';
+import { Button, Surface, Text, TextInput } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function LoginScreen() {
@@ -21,7 +21,7 @@ export default function LoginScreen() {
       await signIn(email, password);
       router.replace('/(app)/chats');
     } catch (error: any) {
-      Alert.alert('Error', error.message);
+      Alert.alert('Error', error.message || 'Failed to login');
     } finally {
       setLoading(false);
     }
